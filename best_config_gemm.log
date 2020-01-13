@@ -1,0 +1,60 @@
+Finish loading 20340 records
+
+Best config:
+[('h_C', [-1, 32, 2, 1]), ('w_C', [-1, 2, 16, 2]), ('rk', [-1, 16])],,None,356086
+Finish loading 20340 records
+extern "C" __global__ void default_function_kernel0( float* __restrict__ A,  float* __restrict__ B,  float* __restrict__ C) {
+   float C_local[128];
+  __shared__ float A_shared[1024];
+  __shared__ float B_shared[1024];
+   float A_shared_local[32];
+   float B_shared_local[4];
+  for (int y_c_init = 0; y_c_init < 2; ++y_c_init) {
+    for (int vthread_s = 0; vthread_s < 32; ++vthread_s) {
+      C_local[((vthread_s * 4) + y_c_init)] = 0.000000e+00f;
+    }
+    for (int vthread_s1 = 0; vthread_s1 < 32; ++vthread_s1) {
+      C_local[(((vthread_s1 * 4) + y_c_init) + 2)] = 0.000000e+00f;
+    }
+  }
+  for (int k_outer = 0; k_outer < 64; ++k_outer) {
+    __syncthreads();
+    for (int ax0_inner = 0; ax0_inner < 32; ++ax0_inner) {
+      A_shared[(((((int)threadIdx.x) * 512) + (ax0_inner * 16)) + ((int)threadIdx.y))] = A[(((((((int)blockIdx.x) * 65536) + (((int)threadIdx.x) * 32768)) + (ax0_inner * 1024)) + (k_outer * 16)) + ((int)threadIdx.y))];
+    }
+    for (int ax0_inner1 = 0; ax0_inner1 < 8; ++ax0_inner1) {
+      for (int ax1_inner = 0; ax1_inner < 4; ++ax1_inner) {
+        B_shared[((((((int)threadIdx.x) * 512) + (ax0_inner1 * 64)) + (((int)threadIdx.y) * 4)) + ax1_inner)] = B[((((((k_outer * 16384) + (((int)threadIdx.x) * 8192)) + (ax0_inner1 * 1024)) + (((int)blockIdx.y) * 64)) + (((int)threadIdx.y) * 4)) + ax1_inner)];
+      }
+    }
+    __syncthreads();
+    for (int k_inner = 0; k_inner < 16; ++k_inner) {
+      for (int vthread_s2 = 0; vthread_s2 < 32; ++vthread_s2) {
+        A_shared_local[vthread_s2] = A_shared[(((vthread_s2 * 32) + (((int)threadIdx.x) * 16)) + k_inner)];
+      }
+      for (int ax1 = 0; ax1 < 2; ++ax1) {
+        B_shared_local[ax1] = B_shared[(((k_inner * 64) + (((int)threadIdx.y) * 2)) + ax1)];
+        B_shared_local[(ax1 + 2)] = B_shared[((((k_inner * 64) + (((int)threadIdx.y) * 2)) + ax1) + 32)];
+      }
+      for (int y_c = 0; y_c < 2; ++y_c) {
+        for (int vthread_s3 = 0; vthread_s3 < 32; ++vthread_s3) {
+          C_local[((vthread_s3 * 4) + y_c)] = (C_local[((vthread_s3 * 4) + y_c)] + (A_shared_local[vthread_s3] * B_shared_local[y_c]));
+        }
+        for (int vthread_s4 = 0; vthread_s4 < 32; ++vthread_s4) {
+          C_local[(((vthread_s4 * 4) + y_c) + 2)] = (C_local[(((vthread_s4 * 4) + y_c) + 2)] + (A_shared_local[vthread_s4] * B_shared_local[(y_c + 2)]));
+        }
+      }
+    }
+  }
+  for (int y_inner_inner_inner = 0; y_inner_inner_inner < 2; ++y_inner_inner_inner) {
+    for (int vthread_s5 = 0; vthread_s5 < 32; ++vthread_s5) {
+      C[((((((((int)blockIdx.x) * 65536) + (vthread_s5 * 2048)) + (((int)threadIdx.x) * 1024)) + (((int)blockIdx.y) * 64)) + (((int)threadIdx.y) * 2)) + y_inner_inner_inner)] = C_local[((vthread_s5 * 4) + y_inner_inner_inner)];
+    }
+    for (int vthread_s6 = 0; vthread_s6 < 32; ++vthread_s6) {
+      C[(((((((((int)blockIdx.x) * 65536) + (vthread_s6 * 2048)) + (((int)threadIdx.x) * 1024)) + (((int)blockIdx.y) * 64)) + (((int)threadIdx.y) * 2)) + y_inner_inner_inner) + 32)] = C_local[(((vthread_s6 * 4) + y_inner_inner_inner) + 2)];
+    }
+  }
+}
+
+
+Time cost of this operator: 0.000995
